@@ -1,5 +1,8 @@
 Wie starte ich die Anwendung?
-Es ist eine React Application, also wie gewohnt mit npm script dev
+Es ist eine React Application
+ -> Projekt clonen
+ -> node.js installieren
+ -> über npm script dev im browser öffnen
 
 Features:
   Wanderer:
