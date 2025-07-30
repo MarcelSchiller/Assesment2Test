@@ -1,14 +1,15 @@
-import {useEffect, useState} from "react";
+import { useState } from "react";
+import WandererSearch from "./WandererSearch.jsx";
 
-const GroupManagement = ({ tour, wanderer, gruppen, updateTourGroups, updateGruppen }) => {
-    const [selectedGroupId, setSelectedGroupId] = useState(tour.gruppen[0] || null);
+const GruppenOrganisation = ({ wanderer, gruppen, updateGruppen, search, setSearch }) => {
+    const [selectedGroupId, setSelectedGroupId] = useState(gruppen[0]?.id || null);
     const [newGroupName, setNewGroupName] = useState("");
-    const [error, setError] = useState(null);
 
-    // Hilfsfunktion: Gruppe aus gruppen-array
     const selectedGroup = gruppen.find((g) => g.id === selectedGroupId);
 
-    // Neue Gruppe anlegen und Tour zuordnen
+
+
+    // Neue Gruppe anlegen
     const addGroup = () => {
         if (!newGroupName.trim()) return;
 
@@ -18,35 +19,15 @@ const GroupManagement = ({ tour, wanderer, gruppen, updateTourGroups, updateGrup
             members: [],
         };
 
-        // Gruppen state aktualisieren
         updateGruppen([...gruppen, newGroup]);
-
-        // Tour Gruppen IDs aktualisieren
-        updateTourGroups(tour.id, [...tour.gruppen, newGroup.id]);
-
         setSelectedGroupId(newGroup.id);
         setNewGroupName("");
     };
 
     // Wanderer zur Gruppe hinzufügen
     const addMemberToGroup = (wandererId) => {
-        if (!selectedGroup) return;
+        if (!selectedGroup || selectedGroup.members.includes(wandererId)) return;
 
-        // Max Teilnehmer prüfen: Summe aller Mitglieder in allen Gruppen der Tour darf maxParticipants nicht überschreiten
-        const totalMembers = gruppen
-            .filter((g) => tour.gruppen.includes(g.id))
-            .reduce((sum, g) => sum + g.members.length, 0);
-
-        if (totalMembers >= tour.maxParticipants) {
-            setError("Maximale Teilnehmeranzahl erreicht!");
-            return;
-        }
-
-        if (selectedGroup.members.includes(wandererId)) return;
-
-        setError(null);
-
-        // Gruppe updaten
         const updatedGroup = {
             ...selectedGroup,
             members: [...selectedGroup.members, wandererId],
@@ -71,18 +52,25 @@ const GroupManagement = ({ tour, wanderer, gruppen, updateTourGroups, updateGrup
         );
     };
 
-    // Verfügbare Wanderer (nicht in der Gruppe)
     const availableWanderer = wanderer.filter(
         (w) => !selectedGroup?.members.includes(w.id)
     );
 
-    useEffect(() => {
-        setSelectedGroupId(tour.gruppen[0] || null);
-    }, [tour]);
+    const filteredWanderer = availableWanderer.filter(wanderer =>
+        wanderer.name.toLowerCase().includes(search.toLowerCase())
+    );
 
     return (
         <div>
-            <h3>{tour.title} - Gruppen verwalten</h3>
+            <h3>Gruppenübersicht</h3>
+            <ul>
+                {gruppen.map((g) => (
+                    <li key={g.id}>
+                        {g.name} — {g.members.length} {g.members.length === 1 ? "Mitglied" : "Mitglieder"}
+                    </li>
+                ))}
+            </ul>
+            <h3>Gruppen verwalten</h3>
 
             {/* Gruppe wählen */}
             <div>
@@ -91,38 +79,30 @@ const GroupManagement = ({ tour, wanderer, gruppen, updateTourGroups, updateGrup
                     value={selectedGroupId || ""}
                     onChange={(e) => setSelectedGroupId(Number(e.target.value))}
                 >
-                    {tour.gruppen.map((gid) => {
-                        const g = gruppen.find((grp) => grp.id === gid);
-                        return (
-                            <option key={gid} value={gid}>
-                                {g?.name || "Unbekannte Gruppe"}
-                            </option>
-                        );
-                    })}
+                    {gruppen.map((g) => (
+                        <option key={g.id} value={g.id}>
+                            {g.name}
+                        </option>
+                    ))}
                 </select>
             </div>
 
-
+            {/* Neue Gruppe anlegen */}
             <div>
                 <input
                     type="text"
                     placeholder="Neue Gruppe"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-
                 />
-                <button
-                    onClick={addGroup}
-                >
-                    Gruppe hinzufügen
-                </button>
+                <button onClick={addGroup}>Gruppe hinzufügen</button>
             </div>
 
-            {/* Mitglieder */}
+            {/* Mitgliederliste */}
             <div>
-                <h4 >Mitglieder</h4>
+                <h4>Mitglieder ({selectedGroup?.members.length})</h4>
                 {selectedGroup?.members.length === 0 ? (
-                    <p >Keine Mitglieder in der Gruppe.</p>
+                    <p>Keine Mitglieder in der Gruppe.</p>
                 ) : (
                     <ul>
                         {selectedGroup.members.map((id) => {
@@ -139,23 +119,18 @@ const GroupManagement = ({ tour, wanderer, gruppen, updateTourGroups, updateGrup
                 )}
             </div>
 
-            {/* Wanderer hinzufügen */}
+            {/* Hinzufügen */}
             <div>
-                <h4 >Wanderer hinzufügen</h4>
-                {error && (<p>{error}</p>)}
-                {availableWanderer.length === 0 ? (
-                    <p >Alle Wanderer sind in dieser Gruppe.</p>
+                <h4>Wanderer hinzufügen</h4>
+                <WandererSearch search={search} setSearch={setSearch} />
+                {filteredWanderer.length === 0 ? (
+                    <p>Alle Wanderer sind in dieser Gruppe.</p>
                 ) : (
                     <ul>
-                        {availableWanderer.map((w) => (
-                            <li key={w.id} >
+                        {filteredWanderer.map((w) => (
+                            <li key={w.id}>
                                 <span>{w.name}</span>
-                                <button
-                                    onClick={() => addMemberToGroup(w.id)}
-                                >
-                                    Hinzufügen
-                                </button>
-
+                                <button onClick={() => addMemberToGroup(w.id)}>Hinzufügen</button>
                             </li>
                         ))}
                     </ul>
@@ -165,4 +140,4 @@ const GroupManagement = ({ tour, wanderer, gruppen, updateTourGroups, updateGrup
     );
 };
 
-export default GroupManagement;
+export default GruppenOrganisation;

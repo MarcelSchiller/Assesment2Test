@@ -4,8 +4,8 @@ import WandererList from "./components/WandererList";
 import WandererSearch from "./components/WandererSearch.jsx";
 import TourList from "./components/TourList";
 import CreateTour from "./components/CreateTour.jsx";
-import GruppenVerwaltung from "./components/GruppenVerwaltung.jsx";
 import FreieTouren from "./components/FreieTouren.jsx";
+import GruppenOrganisation from "./components/GruppenOrganisation.jsx";
 
 
 function App() {
@@ -13,8 +13,8 @@ function App() {
     const [wanderer] = useState(testWanderer);
     const [touren, setTouren] = useState(testWanderungen);
     const [gruppen, setGruppen] = useState(testGruppen);
-    const [selectedTourId, setSelectedTourId] = useState(1);
-
+    const [selectedTourId] = useState(1);
+    const [activeTab, setActiveTab] = useState("wanderer");
 
     const selectedTour = touren.find((w) => w.id === selectedTourId);
 
@@ -22,8 +22,10 @@ function App() {
         wanderer.name.toLowerCase().includes(search.toLowerCase())
     );
     const updateTourGroups = (tourId, newGroupIds) => {
-        setTouren((prev) =>
-            prev.map((t) => (t.id === tourId ? { ...t, gruppen: newGroupIds } : t))
+        setTouren((prevTouren) =>
+            prevTouren.map((tour) =>
+                tour.id === tourId ? { ...tour, gruppen: newGroupIds } : tour
+            )
         );
     };
 
@@ -35,56 +37,76 @@ function App() {
         setGruppen(newGruppen);
     };
 
+
     return (
         <div>
-            <div>
-                <h1>🥾 Wanderer</h1>
-                <WandererSearch search={search} setSearch={setSearch} />
-                <WandererList wanderer={filteredWanderer} />
-            </div>
-            <div>
-                <h1>🥾 Touren</h1>
+            <nav className="mb-6 flex space-x-4">
+                <button
+                    onClick={() => setActiveTab("wanderer")}
+                >
+                    Wanderer
+                </button>
+                <button
+                    onClick={() => setActiveTab("touren")}
+                >
+                    Touren
+                </button>
+                <button
+                    onClick={() => setActiveTab("gruppen")}
+                >
+                    Gruppen
+                </button>
+                <button
+                    onClick={() => setActiveTab("freieTouren")}
+                >
+                    Freie Touren
+                </button>
+            </nav>
 
-                <CreateTour addTour={addTour} />
-
-                <section>
-                    <h2 >Aktuelle Touren</h2>
-                    <TourList touren={touren} />
-                </section>
-            </div>
-
-            <div>
-                <div>
-                    <h1 >Wanderplanungs-Tool</h1>
-                    <FreieTouren wanderungen={touren} gruppen={gruppen} />
-                    {/* Tour Auswahl */}
+            <main>
+                {activeTab === "wanderer" && (
                     <div>
-                        <label>Tour auswählen:</label>
-                        <select
-                            value={selectedTourId}
-                            onChange={(e) => setSelectedTourId(Number(e.target.value))}
-                        >
-                            {touren.map((tour) => (
-                                <option key={tour.id} value={tour.id}>
-                                    {tour.title} ({tour.difficulty})
-                                </option>
-                            ))}
-                        </select>
+                        <h1>🥾 Wanderer</h1>
+                        <WandererSearch search={search} setSearch={setSearch} />
+                        <WandererList wanderer={filteredWanderer} />
                     </div>
+                )}
+                {activeTab === "touren" && (
+                    <div>
+                        <h1>🥾 Touren</h1>
 
-                    {/* Gruppen Verwaltung für ausgewählte Tour */}
-                    {selectedTour && (
-                        <GruppenVerwaltung
-                            tour={selectedTour}
-                            wanderer={wanderer}
-                            gruppen={gruppen}
-                            updateTourGroups={updateTourGroups}
-                            updateGruppen={updateGruppen}
-                        />
-                    )}
-                </div>
-            </div>
+                        <CreateTour addTour={addTour} />
 
+                        <section>
+                            <h2 >Aktuelle Touren</h2>
+                            <TourList touren={touren} gruppen={gruppen} updateTourGroups={updateTourGroups} />
+                        </section>
+                    </div>
+                )}
+
+                {activeTab === "gruppen" && (
+                    <div>
+                        <h1 >Gruppen</h1>
+
+                        {/* Gruppen Verwaltung für ausgewählte Tour */}
+                        {selectedTour && (
+                            <GruppenOrganisation
+                                tour={selectedTour}
+                                wanderer={wanderer}
+                                gruppen={gruppen}
+                                updateGruppen={updateGruppen}
+                                search={search}
+                                setSearch={setSearch}
+                            />
+                        )}
+                    </div>
+                )}
+
+                {activeTab === "freieTouren" && (
+                    <FreieTouren wanderungen={touren} gruppen={gruppen} />
+                )}
+
+            </main>
         </div>
 
     );
