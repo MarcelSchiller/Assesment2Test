@@ -5,7 +5,7 @@ const TourList = ({ touren, gruppen, updateTourGroups }) => {
 
     // Hilfsfunktion: Prüft, ob Gruppe für Tour geeignet ist
     const isGroupEligible = (group, tour) => {
-        return group.members.length < tour.maxParticipants;
+        return group.members.length <= tour.maxParticipants;
     };
 
     const handleGroupChange = (tourId, groupId) => {
