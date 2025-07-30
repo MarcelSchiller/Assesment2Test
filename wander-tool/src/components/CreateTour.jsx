@@ -42,7 +42,7 @@ const CreateTour = ({ addTour }) => {
                 onChange={(e) => setTitle(e.target.value)}
                 required
             />
-
+            <span>Schwierigkeitsgrad</span>
             <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
@@ -51,7 +51,7 @@ const CreateTour = ({ addTour }) => {
                 <option value="Mittel">Mittel</option>
                 <option value="Schwer">Schwer</option>
             </select>
-
+            <span>Maximale Teilnehmerzahl</span>
             <input
                 type="number"
                 min="1"
