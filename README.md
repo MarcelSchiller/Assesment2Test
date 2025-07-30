@@ -1,5 +1,5 @@
 Wie starte ich die Anwendung?
-Es ist eine React Application, also wie gewohnt mit npm sript dev
+Es ist eine React Application, also wie gewohnt mit npm script dev
 
 Features:
   Wanderer:
